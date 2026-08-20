@@ -3,6 +3,7 @@
 package rng
 
 import (
+	"errors"
 	"math"
 	"math/rand"
 )
@@ -47,7 +48,7 @@ func (n *Normal) Antithetic(i int, z float64) float64 {
 // 返回长度 len(zs)+1 的切片（含初始 spot）。zs 为空时返回 error。
 func Path(spot, drift, vol, dt float64, zs []float64) ([]float64, error) {
 	if len(zs) < 1 {
-		return []float64{spot}, nil
+		return nil, errors.New("rng: zs must contain at least one draw")
 	}
 	path := make([]float64, len(zs)+1)
 	path[0] = spot
