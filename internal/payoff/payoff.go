@@ -71,7 +71,13 @@ type LookbackCall struct{}
 
 // Compute 实现 Payoffer。
 func (l LookbackCall) Compute(prices []float64) float64 {
-	return math.Max(prices[len(prices)-1]-prices[0], 0)
+	min := prices[0]
+	for _, s := range prices[1:] {
+		if s < min {
+			min = s
+		}
+	}
+	return math.Max(prices[len(prices)-1]-min, 0)
 }
 
 // Name 实现 Payoffer。
@@ -82,7 +88,13 @@ type LookbackPut struct{}
 
 // Compute 实现 Payoffer。
 func (l LookbackPut) Compute(prices []float64) float64 {
-	return math.Max(prices[0]-prices[len(prices)-1], 0)
+	max := prices[0]
+	for _, s := range prices[1:] {
+		if s > max {
+			max = s
+		}
+	}
+	return math.Max(max-prices[len(prices)-1], 0)
 }
 
 // Name 实现 Payoffer。

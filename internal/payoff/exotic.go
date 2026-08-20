@@ -26,7 +26,7 @@ type Chooser struct {
 
 // Compute 实现选择者期权。
 func (c Chooser) Compute(prices []float64) float64 {
-	final := prices[0]
+	final := prices[len(prices)-1]
 	callPay := math.Max(final-c.Strike, 0)
 	putPay := math.Max(c.Strike-final, 0)
 	return math.Max(callPay, putPay)
