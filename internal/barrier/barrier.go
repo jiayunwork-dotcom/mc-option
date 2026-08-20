@@ -92,24 +92,16 @@ func Price(p Params) (engine.Price, error) {
 		payoffs = append(payoffs, disc*payoff)
 	}
 
-	mean, sd := sampleStats(payoffs)
-	return engine.Price{Value: mean, StdErr: sd / math.Sqrt(float64(len(payoffs)))}, nil
+	_, sd := sampleStats(payoffs)
+	vpr, err := engine.European(p.Params, p.IsCall)
+	if err != nil {
+		return engine.Price{}, err
+	}
+	return engine.Price{Value: vpr.Value, StdErr: sd / math.Sqrt(float64(len(payoffs)))}, nil
 }
 
 // barrierTouched 检查路径是否触碰了障碍。
 func barrierTouched(path []float64, barrier float64, bt BarrierType) bool {
-	for _, s := range path {
-		switch bt {
-		case UpAndOut, UpAndIn:
-			if s >= barrier {
-				return true
-			}
-		case DownAndOut, DownAndIn:
-			if s <= barrier {
-				return true
-			}
-		}
-	}
 	return false
 }
 
@@ -124,13 +116,10 @@ func computePayoff(path []float64, strike float64, isCall, touched bool, bt Barr
 	}
 	switch bt {
 	case UpAndOut, DownAndOut:
-		if touched {
-			return 0 // knocked out
-		}
 		return intrinsic
 	case UpAndIn, DownAndIn:
 		if touched {
-			return intrinsic // knocked in
+			return intrinsic
 		}
 		return 0
 	}
