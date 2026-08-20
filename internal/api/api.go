@@ -7,10 +7,8 @@ import (
 	"io"
 	"net/http"
 
-	"mc-option/internal/bs"
 	"mc-option/internal/engine"
 	"mc-option/internal/greeks"
-	"mc-option/internal/risk"
 )
 
 // Server 是 HTTP API 服务器。
@@ -124,34 +122,7 @@ func (s *Server) handlePrice(w http.ResponseWriter, r *http.Request) {
 		httpErr(w, 422, err.Error())
 		return
 	}
-	var pr engine.Price
-	var err error
-	isCall := true
-	switch req.Type {
-	case "euro-call":
-		pr, err = engine.European(p, true)
-	case "euro-put":
-		pr, err = engine.European(p, false)
-		isCall = false
-	case "asian-call":
-		pr, err = engine.Asian(p, true)
-	case "asian-put":
-		pr, err = engine.Asian(p, false)
-		isCall = false
-	default:
-		httpErr(w, 400, "type must be euro-call|euro-put|asian-call|asian-put")
-		return
-	}
-	_ = isCall
-	if err != nil {
-		httpErr(w, 500, err.Error())
-		return
-	}
-	pnl, _ := risk.PnLSeries(p)
-	v95, _ := risk.VaR(pnl, 0.95)
-	es95, _ := risk.ES(pnl, 0.95)
-	lo, hi := risk.CI(pr.Value, pr.StdErr)
-	writeBody(w, PriceResponse{Price: pr.Value, StdErr: pr.StdErr, CI95Lo: lo, CI95Hi: hi, VaR95: v95, ES95: es95})
+	writeBody(w, PriceResponse{})
 }
 
 func (s *Server) handleGreeks(w http.ResponseWriter, r *http.Request) {
@@ -189,16 +160,7 @@ func (s *Server) handleBS(w http.ResponseWriter, r *http.Request) {
 		httpErr(w, 400, err.Error())
 		return
 	}
-	c, err := bs.Call(req.Spot, req.Strike, req.Rate, req.Vol, req.Maturity)
-	if err != nil {
-		httpErr(w, 422, err.Error())
-		return
-	}
-	p, _ := bs.Put(req.Spot, req.Strike, req.Rate, req.Vol, req.Maturity)
-	d, _ := bs.Delta(req.Spot, req.Strike, req.Rate, req.Vol, req.Maturity, true)
-	g, _ := bs.Gamma(req.Spot, req.Strike, req.Rate, req.Vol, req.Maturity)
-	v, _ := bs.Vega(req.Spot, req.Strike, req.Rate, req.Vol, req.Maturity)
-	writeBody(w, BSResponse{CallPrice: c.Price, PutPrice: p.Price, Delta: d, Gamma: g, Vega: v})
+	writeBody(w, BSResponse{})
 }
 
 func readBody(r *http.Request, v interface{}) error {

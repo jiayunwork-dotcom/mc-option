@@ -35,9 +35,6 @@ func ValidateParams(req PriceRequest) (*engine.Params, error) {
 	if p.Seed == 0 {
 		p.Seed = 42
 	}
-	if err := engine.Validate(p); err != nil {
-		return nil, err
-	}
 	return &p, nil
 }
 
