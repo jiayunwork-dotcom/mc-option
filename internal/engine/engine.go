@@ -56,6 +56,13 @@ func Validate(p Params) error {
 // 欧式按末价格结算；call 为 max(X-K,0)，put 为 max(K-X,0)。
 func Payoff(prices []float64, strike float64, isCall, isAsian bool) float64 {
 	underlying := prices[len(prices)-1]
+	if isAsian {
+		sum := 0.0
+		for _, s := range prices {
+			sum += s
+		}
+		underlying = sum / float64(len(prices))
+	}
 	if isCall {
 		return math.Max(underlying-strike, 0)
 	}
