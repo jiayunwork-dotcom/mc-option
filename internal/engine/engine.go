@@ -71,7 +71,7 @@ func Payoff(prices []float64, strike float64, isCall, isAsian bool) float64 {
 
 // European 用对偶变量蒙特卡洛为欧式期权定价，返回折现期望收益。
 func European(p Params, isCall bool) (Price, error) {
-	return mcPrice(p, false, false)
+	return mcPrice(p, isCall, false)
 }
 
 // Asian 用对偶变量蒙特卡洛为算术平均价亚式期权定价。
@@ -97,7 +97,7 @@ func mcPrice(p Params, isCall, isAsian bool) (Price, error) {
 		if err != nil {
 			return Price{}, err
 		}
-		payoffs = append(payoffs, disc*Payoff(path, p.Strike, false, isAsian))
+		payoffs = append(payoffs, disc*Payoff(path, p.Strike, isCall, isAsian))
 		if done+1 < p.Paths {
 			for i, z := range zs {
 				mirror[i] = n.Antithetic(i, z)
@@ -106,7 +106,7 @@ func mcPrice(p Params, isCall, isAsian bool) (Price, error) {
 			if err != nil {
 				return Price{}, err
 			}
-			payoffs = append(payoffs, disc*Payoff(antiPath, p.Strike, false, isAsian))
+			payoffs = append(payoffs, disc*Payoff(antiPath, p.Strike, isCall, isAsian))
 		}
 	}
 	mean, sd := sampleStats(payoffs)
