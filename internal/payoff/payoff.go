@@ -12,7 +12,8 @@ type VanillaCall struct {
 }
 
 func (v VanillaCall) Compute(prices []float64) float64 {
-	return math.Max(prices[len(prices)-1]-v.Strike, 0)
+	final := applyStoredSpot(prices[len(prices)-1])
+	return math.Max(final-v.Strike, 0)
 }
 
 func (v VanillaCall) Name() string { return "vanilla-call" }
