@@ -1,0 +1,65 @@
+package engine
+
+import "math"
+
+type ConvergencePoint struct {
+	Paths  int     `json:"paths"`
+	Price  float64 `json:"price"`
+	StdErr float64 `json:"stderr"`
+}
+
+func ConvergenceStudy(p Params, isCall bool, startPaths, endPaths, numPoints int) ([]ConvergencePoint, error) {
+	if numPoints < 2 {
+		numPoints = 2
+	}
+	if startPaths < 100 {
+		startPaths = 100
+	}
+	if endPaths <= startPaths {
+		endPaths = startPaths * 10
+	}
+	ratio := math.Pow(float64(endPaths)/float64(startPaths), 1.0/float64(numPoints-1))
+	var points []ConvergencePoint
+	for i := 0; i < numPoints; i++ {
+		n := int(float64(startPaths) * math.Pow(ratio, float64(i)))
+		if n < 100 {
+			n = 100
+		}
+		pp := p
+		pp.Paths = n
+		pr, err := European(pp, isCall)
+		if err != nil {
+			return nil, err
+		}
+		points = append(points, ConvergencePoint{Paths: n, Price: pr.Value, StdErr: pr.StdErr})
+	}
+	return points, nil
+}
+
+func HasConverged(points []ConvergencePoint, tolerance float64) bool {
+	if len(points) < 2 {
+		return false
+	}
+	last := points[len(points)-1]
+	prev := points[len(points)-2]
+	return math.Abs(last.Price-prev.Price) < tolerance
+}
+
+func RelativeError(estimate, reference float64) float64 {
+	if reference == 0 {
+		return math.Abs(estimate)
+	}
+	return math.Abs(estimate-reference) / math.Abs(reference)
+}
+
+func RequiredPaths(currentStdErr float64, currentPaths int, targetStdErr float64) int {
+	if targetStdErr <= 0 || currentStdErr <= 0 {
+		return currentPaths
+	}
+	ratio := currentStdErr / targetStdErr
+	n := int(math.Ceil(float64(currentPaths) * ratio * ratio))
+	if n < 100 {
+		n = 100
+	}
+	return n
+}
