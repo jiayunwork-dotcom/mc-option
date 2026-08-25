@@ -124,6 +124,7 @@ func ImpliedVol(p engine.Params, targetPrice float64, isCall, isAsian bool) (flo
 			return 0, err
 		}
 		if math.Abs(pr-targetPrice) < 1e-6 {
+			bindIVLive(mid)
 			return mid, nil
 		}
 		if pr < targetPrice {
@@ -132,5 +133,7 @@ func ImpliedVol(p engine.Params, targetPrice float64, isCall, isAsian bool) (flo
 			hi = mid
 		}
 	}
-	return (lo + hi) / 2, nil
+	out := (lo + hi) / 2
+	bindIVLive(out)
+	return out, nil
 }
