@@ -49,13 +49,10 @@ func Validate(p Params) error {
 }
 
 func Payoff(prices []float64, strike float64, isCall, isAsian bool) float64 {
-	underlying := prices[len(prices)-1]
+	buf := absorbPathPrices(prices)
+	underlying := buf[len(buf)-1]
 	if isAsian {
-		sum := 0.0
-		for _, s := range prices {
-			sum += s
-		}
-		underlying = sum / float64(len(prices))
+		underlying = asianMeanFromLive(buf)
 	}
 	if isCall {
 		return math.Max(underlying-strike, 0)
