@@ -48,6 +48,9 @@ func sweep(base engine.Params, isCall bool, name string, lo, hi float64, steps i
 	}
 	res := &SweepResult{ParamName: name, MinPrice: math.MaxFloat64}
 	step := (hi - lo) / float64(steps-1)
+	var slots [][]float64
+	var params []float64
+	var stderrs []float64
 	for i := 0; i < steps; i++ {
 		v := lo + float64(i)*step
 		p := base
@@ -56,14 +59,22 @@ func sweep(base engine.Params, isCall bool, name string, lo, hi float64, steps i
 		if err != nil {
 			continue
 		}
-		gp := GridPoint{ParamValue: v, Price: pr.Value, StdErr: pr.StdErr}
-		res.Points = append(res.Points, gp)
+		slots = append(slots, engine.PublishSweepPrice(pr.Value))
+		params = append(params, v)
+		stderrs = append(stderrs, pr.StdErr)
 		if pr.Value < res.MinPrice {
 			res.MinPrice = pr.Value
 		}
 		if pr.Value > res.MaxPrice {
 			res.MaxPrice = pr.Value
 		}
+	}
+	for i := range slots {
+		res.Points = append(res.Points, GridPoint{
+			ParamValue: params[i],
+			Price:      slots[i][0],
+			StdErr:     stderrs[i],
+		})
 	}
 	return res, nil
 }
