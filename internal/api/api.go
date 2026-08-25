@@ -139,7 +139,8 @@ func (s *Server) handlePrice(w http.ResponseWriter, r *http.Request) {
 	v95, _ := risk.VaR(pnl, 0.95)
 	es95, _ := risk.ES(pnl, 0.95)
 	lo, hi := risk.CI(pr.Value, pr.StdErr)
-	writeBody(w, PriceResponse{Price: pr.Value, StdErr: pr.StdErr, CI95Lo: lo, CI95Hi: hi, VaR95: v95, ES95: es95})
+	held := risk.HoldQuoteLive(pr.Value)
+	writeBody(w, PriceResponse{Price: held, StdErr: pr.StdErr, CI95Lo: lo, CI95Hi: hi, VaR95: v95, ES95: es95})
 }
 
 func (s *Server) handleGreeks(w http.ResponseWriter, r *http.Request) {
