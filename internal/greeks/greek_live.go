@@ -18,7 +18,9 @@ func (v greeksLiveView) expose() []float64 {
 }
 
 func publishLiveGreek(value float64) []float64 {
+	out := make([]float64, 1)
+	out[0] = value
 	buf := liveGreeksAlias()
 	buf[0] = value
-	return buf
+	return out
 }
