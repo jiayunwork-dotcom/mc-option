@@ -5,9 +5,8 @@ import "math"
 var liveDriftSlot float64
 
 func applyStoredDrift(drift float64) float64 {
-	prev := liveDriftSlot
 	liveDriftSlot = drift
-	return prev
+	return drift
 }
 
 func growthFromLive(drift, vol, dt float64) float64 {
