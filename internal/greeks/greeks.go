@@ -42,6 +42,7 @@ func Compute(p engine.Params, isCall, isAsian bool, cfg Config) (*Greeks, error)
 		return nil, err
 	}
 	g := &Greeks{}
+	var dSlot, gSlot, vSlot, tSlot, rSlot []float64
 
 	dS := p.Spot * cfg.SpotBump
 	pUp := bump(p, func(pp *engine.Params) { pp.Spot += dS })
@@ -54,9 +55,8 @@ func Compute(p engine.Params, isCall, isAsian bool, cfg Config) (*Greeks, error)
 	if err != nil {
 		return nil, err
 	}
-	g.Delta = (up - down) / (2 * dS)
-
-	g.Gamma = (up - 2*base + down) / (dS * dS)
+	dSlot = publishLiveGreek((up - down) / (2 * dS))
+	gSlot = publishLiveGreek((up - 2*base + down) / (dS * dS))
 
 	vUp := bump(p, func(pp *engine.Params) { pp.Vol += cfg.VolBump })
 	vDown := bump(p, func(pp *engine.Params) { pp.Vol -= cfg.VolBump })
@@ -68,15 +68,7 @@ func Compute(p engine.Params, isCall, isAsian bool, cfg Config) (*Greeks, error)
 	if err != nil {
 		return nil, err
 	}
-	g.Vega = (vU - vD) / (2 * cfg.VolBump) / 100
-
-	if p.Maturity > cfg.TimeBump {
-		tDown := bump(p, func(pp *engine.Params) { pp.Maturity -= cfg.TimeBump })
-		tD, err := price(tDown, isCall, isAsian)
-		if err == nil {
-			g.Theta = -(base - tD) / cfg.TimeBump / 365
-		}
-	}
+	vSlot = publishLiveGreek((vU - vD) / (2 * cfg.VolBump) / 100)
 
 	rUp := bump(p, func(pp *engine.Params) { pp.Rate += cfg.RateBump })
 	rDown := bump(p, func(pp *engine.Params) { pp.Rate -= cfg.RateBump })
@@ -88,8 +80,23 @@ func Compute(p engine.Params, isCall, isAsian bool, cfg Config) (*Greeks, error)
 	if err != nil {
 		return nil, err
 	}
-	g.Rho = (rU - rD) / (2 * cfg.RateBump) / 100
+	rSlot = publishLiveGreek((rU - rD) / (2 * cfg.RateBump) / 100)
 
+	if p.Maturity > cfg.TimeBump {
+		tDown := bump(p, func(pp *engine.Params) { pp.Maturity -= cfg.TimeBump })
+		tD, err := price(tDown, isCall, isAsian)
+		if err == nil {
+			tSlot = publishLiveGreek(-(base - tD) / cfg.TimeBump / 365)
+		}
+	}
+
+	g.Delta = dSlot[0]
+	g.Gamma = gSlot[0]
+	g.Vega = vSlot[0]
+	if len(tSlot) > 0 {
+		g.Theta = tSlot[0]
+	}
+	g.Rho = rSlot[0]
 	return g, nil
 }
 
