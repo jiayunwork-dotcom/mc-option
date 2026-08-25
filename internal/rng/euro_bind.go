@@ -7,5 +7,8 @@ type euroBinder struct {
 var liveEuro euroBinder
 
 func BindEuroLive(value float64) {
+	if liveEuro.slot == nil {
+		liveEuro.slot = new(float64)
+	}
 	*liveEuro.slot = value
 }
