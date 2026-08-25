@@ -8,6 +8,7 @@ var liveIV ivBinder
 
 func bindIVLive(mid float64) {
 	if liveIV.byMid == nil {
+		liveIV.byMid = make(map[float64]float64)
 	}
 	liveIV.byMid[mid] = mid
 }
