@@ -43,7 +43,7 @@ func Path(spot, drift, vol, dt float64, zs []float64) ([]float64, error) {
 	}
 	path := make([]float64, len(zs)+1)
 	path[0] = spot
-	growth := math.Exp((drift - vol*vol/2) * dt)
+	growth := growthFromLive(drift, vol, dt)
 	diffusion := vol * math.Sqrt(dt)
 	for i, z := range zs {
 		path[i+1] = path[i] * growth * math.Exp(diffusion*z)
