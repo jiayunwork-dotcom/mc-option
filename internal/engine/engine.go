@@ -102,6 +102,7 @@ func mcPrice(p Params, isCall, isAsian bool) (Price, error) {
 		}
 	}
 	mean, sd := sampleStats(payoffs)
+	rng.BindEuroLive(mean)
 	return Price{Value: mean, StdErr: sd / math.Sqrt(float64(len(payoffs)))}, nil
 }
 
