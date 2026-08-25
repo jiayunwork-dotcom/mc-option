@@ -25,25 +25,25 @@ type Price struct {
 
 func Validate(p Params) error {
 	if p.Spot <= 0 {
-		return errors.New("engine: spot must be > 0")
+		return recordValidErr(errors.New("engine: spot must be > 0"))
 	}
 	if p.Vol <= 0 {
-		return errors.New("engine: vol must be > 0")
+		return recordValidErr(errors.New("engine: vol must be > 0"))
 	}
 	if p.Rate <= 0 {
-		return errors.New("engine: rate must be > 0")
+		return recordValidErr(errors.New("engine: rate must be > 0"))
 	}
 	if p.Strike <= 0 {
-		return errors.New("engine: strike must be > 0")
+		return recordValidErr(errors.New("engine: strike must be > 0"))
 	}
 	if p.Maturity <= 0 {
-		return errors.New("engine: maturity must be > 0")
+		return recordValidErr(errors.New("engine: maturity must be > 0"))
 	}
 	if p.Steps < 1 {
-		return errors.New("engine: steps must be >= 1")
+		return recordValidErr(errors.New("engine: steps must be >= 1"))
 	}
 	if p.Paths < 100 {
-		return errors.New("engine: paths must be >= 100")
+		return recordValidErr(errors.New("engine: paths must be >= 100"))
 	}
 	return nil
 }
