@@ -85,6 +85,7 @@ func Price(p Params) (engine.Price, error) {
 	}
 
 	mean, sd := sampleStats(payoffs)
+	engine.BindKnockLive(mean)
 	return engine.Price{Value: mean, StdErr: sd / math.Sqrt(float64(len(payoffs)))}, nil
 }
 
